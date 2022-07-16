@@ -17,15 +17,15 @@ export class ShiftController {
     constructor(private shiftService: ShiftService) {}
 
     @Get()
-    findAllShifts(@Query() query: QueryGetShiftDto) {
-        return this.shiftService.find(query)
+    async findAllShifts(@Query() query: QueryGetShiftDto) {
+        return await this.shiftService.find(query)
     }
 
     @Get("/:id")
-    findOneShifts(@Param("id") id: string) {
+    async findOneShifts(@Param("id") id: string) {
         return {
             message: "data found",
-            data: this.shiftService.findOne(+id),
+            data: await this.shiftService.findOne(+id),
         }
     }
 
