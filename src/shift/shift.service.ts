@@ -111,7 +111,7 @@ export class ShiftService {
             throw new BadRequestException("update error, data has been publish")
         }
         Object.assign(data, body)
-        // return this.repo.save(data)
+        return this.repo.save(data)
     }
 
     async remove(id: number) {
