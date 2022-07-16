@@ -108,7 +108,7 @@ export class ShiftService {
             }
         }
         if (data.is_published) {
-            throw new BadRequestException("update error, data has been publish")
+            throw new BadRequestException("update error, data has been published")
         }
         Object.assign(data, body)
         return this.repo.save(data)
@@ -117,7 +117,7 @@ export class ShiftService {
     async remove(id: number) {
         const data = await this.findOne(id)
         if (data.is_published) {
-            throw new BadRequestException("delete error, data has been publish")
+            throw new BadRequestException("delete error, data has been published")
         }
         return this.repo.remove(data)
     }
