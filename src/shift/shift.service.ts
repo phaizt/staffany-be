@@ -82,7 +82,7 @@ export class ShiftService {
     }
 
     async create(body: CreateShiftDto) {
-        const check = await this.findByDatetime(body)        
+        const check = await this.findByDatetime(body)
         if (!check) {
             throw new BadRequestException(
                 "Create Error, the date and time are clashing each other",
@@ -93,20 +93,25 @@ export class ShiftService {
     }
 
     async update(id: number, body: Partial<CreateShiftDto>) {
+        const data = await this.findOne(id)
         if (body.start_time || body.end_time) {
-            const check = this.findByDatetime(body)
-            if (!check) {
-                throw new BadRequestException(
-                    "Create Error, the date and time are clashing each other",
-                )
+            if (
+                data.start_time !== body.start_time ||
+                data.end_time !== body.end_time
+            ) {
+                const check = await this.findByDatetime(body)
+                if (!check) {
+                    throw new BadRequestException(
+                        "Create Error, the date and time are clashing each other",
+                    )
+                }
             }
         }
-        const data = await this.findOne(id)
         if (data.is_published) {
             throw new BadRequestException("update error, data has been publish")
         }
         Object.assign(data, body)
-        return this.repo.save(data)
+        // return this.repo.save(data)
     }
 
     async remove(id: number) {
