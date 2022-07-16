@@ -13,6 +13,10 @@ import * as moment from "moment"
 export class ShiftService {
     constructor(@InjectRepository(Shift) private repo: Repository<Shift>) {}
 
+    db() {
+        return this.repo
+    }
+
     async find(query: QueryGetShiftDto) {
         const take = +query.per_page || 5
         const skip = +query.page || 1
