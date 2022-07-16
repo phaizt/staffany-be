@@ -7,6 +7,7 @@ import {
     Param,
     Put,
     Delete,
+    Patch,
 } from "@nestjs/common"
 import { CreateShiftDto, QueryGetShiftDto } from "./dtos/create-shift.dto"
 import { ShiftService } from "./shift.service"
@@ -22,13 +23,16 @@ export class ShiftController {
 
     @Get("/:id")
     findOneShifts(@Param("id") id: string) {
-        return this.shiftService.findOne(+id)
+        return {
+            message: "data found",
+            data: this.shiftService.findOne(+id),
+        }
     }
 
     @Post()
     async createShift(@Body() body: CreateShiftDto) {
-        const shift = await this.shiftService.create(body)
-        return shift
+        const data = await this.shiftService.create(body)
+        return { message: "shift created succesfully", data }
     }
 
     @Put("/:id")
@@ -36,8 +40,14 @@ export class ShiftController {
         @Param("id") id: string,
         @Body() body: Partial<CreateShiftDto>,
     ) {
-        const shift = await this.shiftService.update(+id, body)
-        return shift
+        const data = await this.shiftService.update(+id, body)
+        return { message: `shift with id ${id} has been updated`, data }
+    }
+
+    @Patch("publish/:id")
+    async publishShift(@Param("id") id: string) {
+        const data = await this.shiftService.update(+id, { is_published: 1 })
+        return { message: `shift with id ${id} has been published`, data }
     }
 
     @Delete("/:id")

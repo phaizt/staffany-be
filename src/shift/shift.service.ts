@@ -44,8 +44,8 @@ export class ShiftService {
     }
 
     create(body: CreateShiftDto) {
-        const user = this.repo.create(body)
-        return this.repo.save(user)
+        const data = this.repo.create(body)
+        return this.repo.save(data)
     }
 
     async update(id: number, body: Partial<CreateShiftDto>) {
@@ -57,10 +57,6 @@ export class ShiftService {
 
     async remove(id: number) {
         const data = await this.findOne(id)
-        this.repo.remove(data)
-
-        return {
-            message: `shift with id ${id} has been deleted`
-        }
+        return this.repo.remove(data)
     }
 }
