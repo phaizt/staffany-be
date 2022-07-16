@@ -7,11 +7,14 @@ import { Repository, Between, Not } from "typeorm"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Shift } from "./shift.entity"
 import { CreateShiftDto, QueryGetShiftDto } from "./dtos/create-shift.dto"
-import * as moment from "moment"
+import * as moment from "moment-timezone"
+
+const tz = "Asia/Singapore"
 
 @Injectable()
 export class ShiftService {
     constructor(@InjectRepository(Shift) private repo: Repository<Shift>) {}
+
 
     db() {
         return this.repo
@@ -20,8 +23,8 @@ export class ShiftService {
     async find(query: QueryGetShiftDto) {
         const take = +query.per_page || 5
         const skip = +query.page || 1
-        const valid = moment(query.date, "yyyy-MM-DD").isValid()
-        const date = valid ? moment(query.date) : moment()
+        const valid = moment(query.date, "yyyy-MM-DD").tz(tz).isValid()
+        const date = valid ? moment(query.date).tz(tz) : moment().tz(tz)
         const start_date = date.clone()
         const end_date = date.clone().add(1, "day")
 
@@ -64,16 +67,16 @@ export class ShiftService {
         let valid = true
         if (data) {
             data.forEach((el) => {
-                const start_time = moment(el.start_time, "HH:mm").subtract(
+                const start_time = moment(el.start_time, "HH:mm").tz(tz).subtract(
                     "2",
                     "minutes",
                 )
-                const end_time = moment(el.end_time, "HH:mm").add(
+                const end_time = moment(el.end_time, "HH:mm").tz(tz).add(
                     "2",
                     "minutes",
                 )
-                const m_start = moment(body.start_time, "HH:mm")
-                const m_end = moment(body.end_time, "HH:mm")
+                const m_start = moment(body.start_time, "HH:mm").tz(tz)
+                const m_end = moment(body.end_time, "HH:mm").tz(tz)
                 if (
                     m_start.isBetween(start_time, end_time) ||
                     m_end.isBetween(start_time, end_time)
@@ -121,8 +124,8 @@ export class ShiftService {
     }
 
     async weekPublish(date: string) {
-        const valid = moment(date, "yyyy-MM-DD").isValid()
-        const dateOfWeek = valid ? moment(date) : moment()
+        const valid = moment(date, "yyyy-MM-DD").tz(tz).isValid()
+        const dateOfWeek = valid ? moment(date).tz(tz) : moment().tz(tz)
         const start = dateOfWeek.clone().startOf("week")
         const end = dateOfWeek.clone().endOf("week").add(1, "day")
         const data = await this.repo.find({
