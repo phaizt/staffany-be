@@ -17,3 +17,9 @@ export class CreateShiftDto {
     @IsOptional()
     is_published: number | null
 }
+
+export type QueryGetShiftDto = {
+    per_page: string
+    page: string
+    date: string
+}
