@@ -44,10 +44,16 @@ export class ShiftController {
         return { message: `shift with id ${id} has been updated`, data }
     }
 
-    @Patch("publish/:id")
+    @Patch("/publish/:id")
     async publishShift(@Param("id") id: string) {
         const data = await this.shiftService.update(+id, { is_published: 1 })
         return { message: `shift with id ${id} has been published`, data }
+    }
+
+    @Patch("/publish")
+    async publishWeekShift(@Query("date") date: string) {
+        const data = await this.shiftService.weekPublish(date)
+        return { message: `publish a week successful`, data }
     }
 
     @Delete("/:id")

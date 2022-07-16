@@ -3,7 +3,7 @@ import {
     Injectable,
     NotFoundException,
 } from "@nestjs/common"
-import { Repository, Between } from "typeorm"
+import { Repository, Between, Not } from "typeorm"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Shift } from "./shift.entity"
 import { CreateShiftDto, QueryGetShiftDto } from "./dtos/create-shift.dto"
@@ -18,7 +18,7 @@ export class ShiftService {
         const skip = +query.page || 1
         const valid = moment(query.date, "yyyy-MM-DD").isValid()
         const date = valid ? moment(query.date) : moment()
-        const start_date = date.clone().subtract(1, "day")
+        const start_date = date.clone()
         const end_date = date.clone().add(1, "day")
 
         const [data, count] = await this.repo.findAndCount({
@@ -49,7 +49,7 @@ export class ShiftService {
 
     async findByDatetime(body: Partial<CreateShiftDto>) {
         const date = moment(body.date, "yyyy-MM-DD")
-        const start_date = date.clone().subtract(1, "day")
+        const start_date = date.clone()
         const end_date = date.clone().add(1, "day")
 
         const data = await this.repo.find({
@@ -88,7 +88,7 @@ export class ShiftService {
                 "Create Error, the date and time are clashing each other",
             )
         }
-        const data = this.repo.create(body)
+        const data = this.repo.create({ ...body, is_published: 0 })
         return this.repo.save(data)
     }
 
@@ -108,16 +108,39 @@ export class ShiftService {
             }
         }
         if (data.is_published) {
-            throw new BadRequestException("update error, data has been published")
+            throw new BadRequestException(
+                "update error, data has been published",
+            )
         }
         Object.assign(data, body)
+        return this.repo.save(data)
+    }
+
+    async weekPublish(date: string) {
+        const valid = moment(date, "yyyy-MM-DD").isValid()
+        const dateOfWeek = valid ? moment(date) : moment()
+        const start = dateOfWeek.clone().startOf("week")
+        const end = dateOfWeek.clone().endOf("week").add(1, "day")
+        const data = await this.repo.find({
+            where: [
+                {
+                    date: Between(start.toDate(), end.toDate()),
+                    is_published: Not(1),
+                },
+            ],
+        })
+        data.forEach((el) => {
+            Object.assign(el, { is_published: 1 })
+        })
         return this.repo.save(data)
     }
 
     async remove(id: number) {
         const data = await this.findOne(id)
         if (data.is_published) {
-            throw new BadRequestException("delete error, data has been published")
+            throw new BadRequestException(
+                "delete error, data has been published",
+            )
         }
         return this.repo.remove(data)
     }
