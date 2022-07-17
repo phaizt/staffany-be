@@ -15,7 +15,6 @@ const tz = "Asia/Singapore"
 export class ShiftService {
     constructor(@InjectRepository(Shift) private repo: Repository<Shift>) {}
 
-
     db() {
         return this.repo
     }
@@ -67,14 +66,12 @@ export class ShiftService {
         let valid = true
         if (data) {
             data.forEach((el) => {
-                const start_time = moment(el.start_time, "HH:mm").tz(tz).subtract(
-                    "2",
-                    "minutes",
-                )
-                const end_time = moment(el.end_time, "HH:mm").tz(tz).add(
-                    "2",
-                    "minutes",
-                )
+                const start_time = moment(el.start_time, "HH:mm")
+                    .tz(tz)
+                    .subtract("2", "minutes")
+                const end_time = moment(el.end_time, "HH:mm")
+                    .tz(tz)
+                    .add("2", "minutes")
                 const m_start = moment(body.start_time, "HH:mm").tz(tz)
                 const m_end = moment(body.end_time, "HH:mm").tz(tz)
                 if (
@@ -150,5 +147,11 @@ export class ShiftService {
             )
         }
         return this.repo.remove(data)
+    }
+
+    async clear() {
+         const aa = await this.repo.clear()
+         console.log(aa)
+         return aa
     }
 }

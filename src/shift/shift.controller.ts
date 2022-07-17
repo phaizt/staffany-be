@@ -56,6 +56,12 @@ export class ShiftController {
         return { message: `publish a week successful`, data }
     }
 
+    @Delete("/clearall")
+    async clear() {
+        const shift = await this.shiftService.clear()
+        return shift
+    }
+
     @Delete("/:id")
     async deleteShift(@Param("id") id: string) {
         const shift = await this.shiftService.remove(+id)
