@@ -23,7 +23,7 @@ export class ShiftService {
         const valid = moment(query.date, "yyyy-MM-DD").isValid()
         const date = valid ? moment(query.date) : moment()
         const start_date = date.clone()
-        const end_date = date.clone()
+        const end_date = date.clone().add(1, "day")
 
         const [data, count] = await this.repo.findAndCount({
             where: {
