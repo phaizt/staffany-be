@@ -7,9 +7,7 @@ import { Repository, Between, Not } from "typeorm"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Shift } from "./shift.entity"
 import { CreateShiftDto, QueryGetShiftDto } from "./dtos/create-shift.dto"
-import * as moment from "moment-timezone"
-
-const tz = "Asia/Singapore"
+import * as moment from "moment"
 
 @Injectable()
 export class ShiftService {
@@ -22,8 +20,8 @@ export class ShiftService {
     async find(query: QueryGetShiftDto) {
         const take = +query.per_page || 5
         const skip = +query.page || 1
-        const valid = moment(query.date, "yyyy-MM-DD").tz(tz).isValid()
-        const date = valid ? moment(query.date).tz(tz) : moment().tz(tz)
+        const valid = moment(query.date, "yyyy-MM-DD").isValid()
+        const date = valid ? moment(query.date) : moment()
         const start_date = date.clone()
         const end_date = date.clone().add(1, "day")
 
@@ -66,17 +64,20 @@ export class ShiftService {
         let valid = true
         if (data) {
             data.forEach((el) => {
-                const start_time = moment(el.start_time, "HH:mm")
-                    .tz(tz)
-                    .subtract("2", "minutes")
-                const end_time = moment(el.end_time, "HH:mm")
-                    .tz(tz)
-                    .add("2", "minutes")
-                const m_start = moment(body.start_time, "HH:mm").tz(tz)
-                const m_end = moment(body.end_time, "HH:mm").tz(tz)
+                const start = moment(el.start_time, "HH:mm")
+                const end = moment(el.end_time, "HH:mm")
+                const start_time = start.clone().subtract("2", "minutes")
+                const end_time = end.clone().add("2", "minutes")
+
+                const m_start = moment(body.start_time, "HH:mm")
+                const m_end = moment(body.end_time, "HH:mm")
+                const m_start_time = m_start.clone().subtract("2", "minutes")
+                const m_end_time = m_end.clone().add("2", "minutes")
                 if (
                     m_start.isBetween(start_time, end_time) ||
-                    m_end.isBetween(start_time, end_time)
+                    m_end.isBetween(start_time, end_time) ||
+                    start.isBetween(m_start_time, m_end_time) ||
+                    end.isBetween(m_start_time, m_end_time)
                 ) {
                     valid = false
                 }
@@ -92,7 +93,6 @@ export class ShiftService {
                 "Create Error, the date and time are clashing each other",
             )
         }
-        console.log("body", body)
         const data = this.repo.create({ ...body, is_published: 0 })
         return this.repo.save(data)
     }
@@ -122,8 +122,8 @@ export class ShiftService {
     }
 
     async weekPublish(date: string) {
-        const valid = moment(date, "yyyy-MM-DD").tz(tz).isValid()
-        const dateOfWeek = valid ? moment(date).tz(tz) : moment().tz(tz)
+        const valid = moment(date, "yyyy-MM-DD").isValid()
+        const dateOfWeek = valid ? moment(date) : moment()
         const start = dateOfWeek.clone().startOf("week")
         const end = dateOfWeek.clone().endOf("week").add(1, "day")
         const data = await this.repo.find({
@@ -151,8 +151,8 @@ export class ShiftService {
     }
 
     async clear() {
-         const aa = await this.repo.clear()
-         console.log(aa)
-         return aa
+        const aa = await this.repo.clear()
+        console.log(aa)
+        return aa
     }
 }
