@@ -92,6 +92,7 @@ export class ShiftService {
                 "Create Error, the date and time are clashing each other",
             )
         }
+        console.log("body", body)
         const data = this.repo.create({ ...body, is_published: 0 })
         return this.repo.save(data)
     }
